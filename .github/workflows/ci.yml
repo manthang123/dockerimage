@@ -1,33 +1,33 @@
-name: CI Build with Visual Studio 2022 17.9
+name: Build and Push Docker Image
 
 on:
   push:
     branches:
       - main  # Trigger on pushes to the main branch
-  pull_request:
-    branches:
-      - main  # Trigger on pull requests targeting the main branch
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  build:
+  build-and-push:
     runs-on: windows-latest  # Use a Windows runner
-
-    container:
-      image: yourdockerhubusername/visualstudio2022:17.9  # Your custom Docker image
 
     steps:
       # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Restore NuGet packages (if applicable)
-      - name: Restore NuGet packages
-        run: nuget restore YourSolution.sln
+      # Step 2: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      # Step 3: Build the solution using MSBuild
-      - name: Build solution
-        run: msbuild YourSolution.sln /p:Configuration=Release
+      # Step 3: Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t yourdockerhubusername/visualstudio2022:17.9 .
 
-      # Step 4: Run tests (optional)
-      - name: Run tests
-        run: vstest.console YourTestProject\bin\Release\*.dll
+      # Step 4: Push the Docker image to Docker Hub
+      - name: Push Docker image
+        run: |
+          docker push yourdockerhubusername/visualstudio2022:17.9
