@@ -1,0 +1,33 @@
+name: CI Build with Visual Studio 2022 17.9
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests targeting the main branch
+
+jobs:
+  build:
+    runs-on: windows-latest  # Use a Windows runner
+
+    container:
+      image: yourdockerhubusername/visualstudio2022:17.9  # Your custom Docker image
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Restore NuGet packages (if applicable)
+      - name: Restore NuGet packages
+        run: nuget restore YourSolution.sln
+
+      # Step 3: Build the solution using MSBuild
+      - name: Build solution
+        run: msbuild YourSolution.sln /p:Configuration=Release
+
+      # Step 4: Run tests (optional)
+      - name: Run tests
+        run: vstest.console YourTestProject\bin\Release\*.dll
